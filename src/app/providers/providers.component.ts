@@ -1,17 +1,40 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { catchError, finalize, of } from 'rxjs';
 
-interface Provider {
+import { environment } from '../../environments/environment';
+import { ConfirmDialogComponent } from '../shared/components/confirm-dialog/confirm-dialog.component';
+
+export interface Provider {
   id: string;
   name: string;
-  type: 'baremetal' | 'aws' | 'gcp' | 'azure';
-  hasAgent: boolean;
+  type: 'baremetal' | 'aws' | 'gcp' | 'azure' | 'other';
+  status: 'active' | 'inactive' | 'error' | 'pending' | 'refreshing';
+  lastSeen?: Date;
   bmcAddress?: string;
+  hasAgent: boolean;
+  cpuCores?: number;
+  memoryGB?: number;
+  storageGB?: number;
+  location?: string;
+  tags?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Component({
@@ -19,202 +42,191 @@ interface Provider {
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatListModule
+    MatListModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule,
+    MatMenuModule,
+    MatDialogModule,
+    MatChipsModule,
+    MatTooltipModule,
+    MatProgressBarModule,
+    MatDividerModule,
+    MatToolbarModule,
+    HttpClientModule,
+    DatePipe
   ],
-  template: `
-    <div class="providers-container">
-      <div class="header">
-        <h2>Cloud & Bare Metal Providers</h2>
-        <button mat-raised-button color="primary" (click)="addNewProvider()">
-          <mat-icon>add</mat-icon>
-          Add Provider
-        </button>
-      </div>
-
-      <div class="providers-list">
-        <mat-card *ngFor="let provider of providers" class="provider-card">
-          <mat-card-header>
-            <mat-card-title>{{ provider.name }}</mat-card-title>
-            <mat-card-subtitle>
-              {{ getProviderType(provider.type) }}
-              <span class="agent-status" [class.agent-active]="provider.hasAgent">
-                {{ provider.hasAgent ? 'With Agent' : 'No Agent' }}
-              </span>
-            </mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <div *ngIf="provider.bmcAddress" class="bmc-info">
-              <mat-icon>dns</mat-icon>
-              <span>{{ provider.bmcAddress }}</span>
-            </div>
-          </mat-card-content>
-          <mat-card-actions align="end">
-            <button mat-button color="primary" (click)="viewProvider(provider.id)">
-              <mat-icon>visibility</mat-icon>
-              View
-            </button>
-            <button mat-button color="accent" (click)="editProvider(provider.id)">
-              <mat-icon>edit</mat-icon>
-              Edit
-            </button>
-          </mat-card-actions>
-        </mat-card>
-
-        <div *ngIf="providers.length === 0" class="empty-state">
-          <mat-icon class="empty-icon">cloud_off</mat-icon>
-          <h3>No Providers Found</h3>
-          <p>Get started by adding your first provider</p>
-          <button mat-raised-button color="primary" (click)="addNewProvider()">
-            <mat-icon>add</mat-icon>
-            Add Provider
-          </button>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .providers-container {
-      padding: 16px;
-    }
-    
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-    
-    .providers-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-    }
-    
-    .provider-card {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      
-      .mat-mdc-card-header {
-        padding-bottom: 8px;
-      }
-      
-      .mat-mdc-card-content {
-        flex-grow: 1;
-        padding-top: 8px;
-      }
-      
-      .mat-mdc-card-actions {
-        padding: 8px;
-      }
-    }
-    
-    .agent-status {
-      display: inline-block;
-      margin-left: 8px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      background-color: #f5f5f5;
-      color: #666;
-      
-      &.agent-active {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-      }
-    }
-    
-    .bmc-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #666;
-      font-size: 14px;
-      margin-top: 8px;
-      
-      mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-      }
-    }
-    
-    .empty-state {
-      grid-column: 1 / -1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 48px 24px;
-      border: 2px dashed #e0e0e0;
-      border-radius: 4px;
-      
-      .empty-icon {
-        font-size: 56px;
-        width: 56px;
-        height: 56px;
-        margin-bottom: 16px;
-        color: #9e9e9e;
-      }
-      
-      h3 {
-        margin: 0 0 8px;
-        font-size: 18px;
-        font-weight: 500;
-      }
-      
-      p {
-        margin: 0 0 16px;
-        color: #757575;
-      }
-    }
-  `]
+  providers: [DatePipe],
+  templateUrl: './providers.component.html',
+  styleUrls: ['./providers.component.scss']
 })
-export class ProvidersComponent {
-  // Mock data - replace with actual API call
-  providers: Provider[] = [
-    {
-      id: '1',
-      name: 'Bare Metal Cluster 1',
-      type: 'baremetal',
-      hasAgent: false,
-      bmcAddress: '192.168.1.100'
-    },
-    {
-      id: '2',
-      name: 'AWS Production',
-      type: 'aws',
-      hasAgent: true
-    }
-  ];
+export class ProvidersComponent implements OnInit {
+  providers: Provider[] = [];
+  loading = false;
+  error: string | null = null;
+  private http = inject(HttpClient);
+  private readonly apiUrl = environment ? `${environment.apiUrl}/providers` : '/api/providers';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog,
+    private datePipe: DatePipe
+  ) {}
 
-  getProviderType(type: string): string {
-    const types: {[key: string]: string} = {
-      'baremetal': 'Bare Metal',
-      'aws': 'Amazon Web Services',
-      'gcp': 'Google Cloud Platform',
-      'azure': 'Microsoft Azure'
-    };
-    return types[type] || type;
+  ngOnInit(): void {
+    this.loadProviders();
   }
 
-  addNewProvider() {
+  loadProviders(): void {
+    this.loading = true;
+    this.error = null;
+
+    this.http.get<Provider[]>(this.apiUrl).pipe(
+      catchError((error: any) => {
+        console.error('Error loading providers:', error);
+        this.error = 'Failed to load providers. Please try again.';
+        return of([]);
+      }),
+      finalize(() => this.loading = false)
+    ).subscribe((providers: Provider[]) => {
+      this.providers = providers.map(provider => ({
+        ...provider,
+        lastSeen: provider.lastSeen ? new Date(provider.lastSeen) : undefined,
+        createdAt: provider.createdAt ? new Date(provider.createdAt) : undefined,
+        updatedAt: provider.updatedAt ? new Date(provider.updatedAt) : undefined
+      }));
+    });
+  }
+
+  refreshProviders(): void {
+    this.loadProviders();
+  }
+
+  refreshProvider(id: string): void {
+    const provider = this.providers.find(p => p.id === id);
+    if (!provider) return;
+
+    provider.status = 'refreshing';
+    
+    this.http.get<Provider>(`${this.apiUrl}/${id}/refresh`).pipe(
+      catchError(error => {
+        console.error('Error refreshing provider:', error);
+        this.snackBar.open('Failed to refresh provider', 'Dismiss', { duration: 3000 });
+        provider.status = 'error';
+        return of(null);
+      })
+    ).subscribe(updatedProvider => {
+      if (updatedProvider) {
+        const index = this.providers.findIndex(p => p.id === id);
+        if (index !== -1) {
+          this.providers[index] = {
+            ...updatedProvider,
+            lastSeen: updatedProvider.lastSeen ? new Date(updatedProvider.lastSeen) : undefined,
+            updatedAt: new Date()
+          };
+        }
+        this.snackBar.open('Provider refreshed successfully', 'Dismiss', { duration: 2000 });
+      }
+    });
+  }
+
+  confirmDelete(provider: Provider): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Provider',
+        message: `Are you sure you want to delete ${provider.name}? This action cannot be undone.`,
+        confirmText: 'Delete',
+        confirmColor: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.deleteProvider(provider.id);
+      }
+    });
+  }
+
+  deleteProvider(id: string): void {
+    this.http.delete(`${this.apiUrl}/${id}`).pipe(
+      catchError(error => {
+        console.error('Error deleting provider:', error);
+        this.snackBar.open('Failed to delete provider', 'Dismiss', { duration: 3000 });
+        return of(null);
+      })
+    ).subscribe(() => {
+      this.providers = this.providers.filter(p => p.id !== id);
+      this.snackBar.open('Provider deleted successfully', 'Dismiss', { duration: 2000 });
+    });
+  }
+
+  viewProvider(id: string): void {
+    this.router.navigate(['/providers', id]);
+  }
+
+  editProvider(id: string): void {
+    this.router.navigate(['/providers', id, 'edit']);
+  }
+
+  addNewProvider(): void {
     this.router.navigate(['/providers/new']);
   }
 
-  viewProvider(id: string) {
-    // TODO: Navigate to provider details
-    console.log('View provider:', id);
+  getProviderIcon(type: string): string {
+    switch (type) {
+      case 'aws':
+        return 'cloud_queue';
+      case 'gcp':
+        return 'g_mobiledata';
+      case 'azure':
+        return 'cloud_queue';
+      case 'baremetal':
+        return 'dns';
+      default:
+        return 'cloud';
+    }
   }
 
-  editProvider(id: string) {
-    // TODO: Navigate to edit provider
-    console.log('Edit provider:', id);
+  getProviderType(type: string): string {
+    return type === 'baremetal' ? 'Bare Metal' : type.toUpperCase();
+  }
+
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'active':
+        return 'primary';
+      case 'inactive':
+        return 'accent';
+      case 'error':
+        return 'warn';
+      case 'refreshing':
+        return 'accent';
+      default:
+        return '';
+    }
+  }
+
+  getLastSeen(date?: Date): string {
+    if (!date) return 'Never';
+    
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+    
+    return this.datePipe.transform(date, 'medium') || date.toLocaleString();
   }
 }

@@ -177,42 +177,23 @@
   }
 </style>
 
-<mat-sidenav-container class="example-container" autosize>
-  <mat-sidenav #sidenav mode="side" opened class="example-sidenav">
-    <mat-toolbar color="primary">Nimbus</mat-toolbar>
-    <mat-nav-list>
-      <a mat-list-item href="#" routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-      <a mat-list-item href="#" routerLink="/providers" routerLinkActive="active">Providers</a>
-      <a mat-list-item href="#" routerLink="/baremetal" routerLinkActive="active">Bare Metal</a>
-      <a mat-list-item href="#" routerLink="/settings" routerLinkActive="active">Settings</a>
-    </mat-nav-list>
-  </mat-sidenav>
-
-  <mat-sidenav-content>
-    <mat-toolbar color="primary" class="top-toolbar">
-      <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="sidenav.toggle()">
-        <mat-icon>menu</mat-icon>
-      </button>
-      <span>Nimbus Cloud Platform</span>
-      <span class="spacer"></span>
-      <button mat-icon-button aria-label="Notifications">
-        <mat-icon>notifications</mat-icon>
-      </button>
-      <button mat-icon-button aria-label="User Account">
-        <mat-icon>account_circle</mat-icon>
-      </button>
-    </mat-toolbar>
-
-    <div class="main-content">
+<div class="app-container">
+  <app-header></app-header>
+  
+  <main class="main-content">
+    <div class="container">
       <router-outlet></router-outlet>
     </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  </main>
+
+  <footer class="app-footer">
+    <div class="container">
+      <p>&copy; {{ currentYear }} Nimbus. All rights reserved.</p>
+    </div>
+  </footer>
+</div>
 
 <style>
-  .example-container {
-    height: 100vh;
-  }
   .example-sidenav {
     width: 240px;
   }

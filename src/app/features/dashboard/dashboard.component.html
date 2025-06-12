@@ -1,0 +1,90 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+    <p class="mt-1 text-sm text-gray-600">Welcome back! Here's what's happening with your Nimbus platform.</p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div *ngFor="let stat of stats" class="stats-card">
+      <div class="stats-icon" [ngClass]="stat.color">
+        <span class="material-icons">{{ stat.icon }}</span>
+      </div>
+      <div class="stats-content">
+        <p class="stats-value">{{ stat.value }}</p>
+        <p class="stats-title">{{ stat.title }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="mt-8 grid gap-6 lg:grid-cols-3">
+    <!-- Recent Activity -->
+    <div class="lg:col-span-2">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Recent Activity</h2>
+          <button class="text-sm font-medium text-blue-600 hover:text-blue-800">View All</button>
+        </div>
+        <div class="divide-y divide-gray-200">
+          <div *ngFor="let activity of recentActivity" class="activity-item">
+            <div class="activity-icon">
+              <span class="material-icons">{{ activity.icon }}</span>
+            </div>
+            <div class="activity-details">
+              <p class="activity-action">{{ activity.action }}</p>
+              <p class="activity-time">{{ activity.time }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Quick Actions</h2>
+        </div>
+        <div class="space-y-4">
+          <button class="quick-action-btn bg-blue-600 hover:bg-blue-700 text-white">
+            <span class="material-icons">add</span>
+            Add Provider
+          </button>
+          <button class="quick-action-btn bg-white hover:bg-gray-50 text-gray-700 border border-gray-300">
+            <span class="material-icons">cloud_upload</span>
+            Deploy Instance
+          </button>
+          <button class="quick-action-btn bg-white hover:bg-gray-50 text-gray-700 border border-gray-300">
+            <span class="material-icons">settings</span>
+            Settings
+          </button>
+        </div>
+      </div>
+
+      <!-- System Status -->
+      <div class="mt-6 card">
+        <div class="card-header">
+          <h2 class="card-title">System Status</h2>
+        </div>
+        <div class="space-y-4">
+          <div class="status-item">
+            <div class="status-indicator bg-green-500"></div>
+            <span>API Server</span>
+            <span class="ml-auto text-sm text-gray-500">Operational</span>
+          </div>
+          <div class="status-item">
+            <div class="status-indicator bg-green-500"></div>
+            <span>Database</span>
+            <span class="ml-auto text-sm text-gray-500">Connected</span>
+          </div>
+          <div class="status-item">
+            <div class="status-indicator bg-green-500"></div>
+            <span>Authentication</span>
+            <span class="ml-auto text-sm text-gray-500">Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

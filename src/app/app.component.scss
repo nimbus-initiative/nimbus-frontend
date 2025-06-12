@@ -1,0 +1,58 @@
+/* Main app container */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  padding: 2rem 0;
+  background-color: #ffffff;
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+}
+
+/* Footer */
+.app-footer {
+  background-color: #1e293b;
+  color: #f8fafc;
+  padding: 1.5rem 0;
+  margin-top: auto;
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    text-align: center;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #94a3b8;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1.5rem 0;
+  }
+}
+
+/* Animation for route transitions */
+.route-transition {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

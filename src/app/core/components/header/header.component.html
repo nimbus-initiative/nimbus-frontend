@@ -1,0 +1,43 @@
+<header class="header">
+  <div class="header-container">
+    <div class="logo">
+      <a routerLink="/" class="logo-link">Nimbus</a>
+    </div>
+
+    <nav class="nav" *ngIf="isAuthenticated$ | async">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/providers" routerLinkActive="active" class="nav-link">Providers</a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/baremetal" routerLinkActive="active" class="nav-link">Bare Metal</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="user-actions" *ngIf="isAuthenticated$ | async; else authButtons">
+      <div class="user-dropdown">
+        <button class="user-button" type="button">
+          <span class="user-email">{{ (currentUser$ | async)?.email || 'User' }}</span>
+          <svg class="dropdown-arrow" viewBox="0 0 20 20">
+            <path fill="currentColor" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"></path>
+          </svg>
+        </button>
+        <div class="dropdown-menu">
+          <a routerLink="/settings" class="dropdown-item">Settings</a>
+          <button (click)="onLogout()" class="dropdown-item">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #authButtons>
+      <div class="auth-buttons">
+        <a routerLink="/login" class="btn btn-link">Log in</a>
+        <a routerLink="/register" class="btn btn-primary">Sign up</a>
+      </div>
+    </ng-template>
+  </div>
+</header>

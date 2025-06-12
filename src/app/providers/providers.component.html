@@ -1,0 +1,131 @@
+<div class="providers-container">
+  <!-- Header with title and action buttons -->
+  <div class="header">
+    <div>
+      <h2>Infrastructure Providers</h2>
+      <p class="subtitle">Manage your cloud and bare metal providers</p>
+    </div>
+    <div class="actions">
+      <button mat-stroked-button (click)="refreshProviders()" [disabled]="loading">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      <button mat-raised-button color="primary" (click)="addNewProvider()">
+        <mat-icon>add</mat-icon>
+        Add Provider
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading providers...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon color="warn">error_outline</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-button color="primary" (click)="loadProviders()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !error && providers.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">cloud_off</mat-icon>
+    <h3>No Providers Found</h3>
+    <p>Get started by adding your first provider</p>
+    <button mat-raised-button color="primary" (click)="addNewProvider()">
+      <mat-icon>add</mat-icon>
+      Add Provider
+    </button>
+  </div>
+
+  <!-- Providers grid -->
+  <div *ngIf="!loading && !error && providers.length > 0" class="providers-grid">
+    <mat-card *ngFor="let provider of providers" class="provider-card">
+      <div class="bmc-link" *ngIf="provider.bmcAddress" matTooltip="Open BMC Console" [matTooltipPosition]="'above'">
+        <a [href]="'http://' + provider.bmcAddress" target="_blank" (click)="$event.stopPropagation()">
+          <mat-icon>dns</mat-icon>
+          BMC
+        </a>
+      </div>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="provider-icon" [class]="getStatusColor(provider.status)">
+            {{ getProviderIcon(provider.type) }}
+          </mat-icon>
+          {{ provider.name }}
+        </mat-card-title>
+        <mat-card-subtitle>
+          <span class="provider-type">{{ getProviderType(provider.type) }}</span>
+          <mat-chip-list>
+            <mat-chip [color]="provider.hasAgent ? 'primary' : 'warn'" selected size="small">
+              {{ provider.hasAgent ? 'Agent Installed' : 'No Agent' }}
+            </mat-chip>
+            <mat-chip [color]="getStatusColor(provider.status)" selected size="small">
+              {{ provider.status | titlecase }}
+            </mat-chip>
+          </mat-chip-list>
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="provider-details">
+          <div class="detail-row">
+            <mat-icon>schedule</mat-icon>
+            <span>Last seen: {{ getLastSeen(provider.lastSeen) }}</span>
+          </div>
+          
+          <div *ngIf="provider.bmcAddress" class="detail-row" (click)="openBmcUrl(provider.bmcAddress, $event)" style="cursor: pointer;">
+            <mat-icon>dns</mat-icon>
+            <span>BMC: {{ provider.bmcAddress }}</span>
+            <mat-icon class="external-link-icon">open_in_new</mat-icon>
+          </div>
+          
+          <div *ngIf="provider.cpuCores" class="detail-row">
+            <mat-icon>memory</mat-icon>
+            <span>{{ provider.cpuCores }} vCPUs</span>
+          </div>
+          
+          <div *ngIf="provider.memoryGB" class="detail-row">
+            <mat-icon>memory</mat-icon>
+            <span>{{ provider.memoryGB }}GB RAM</span>
+          </div>
+          
+          <div *ngIf="provider.storageGB" class="detail-row">
+            <mat-icon>storage</mat-icon>
+            <span>{{ provider.storageGB }}GB Storage</span>
+          </div>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions align="end">
+        <button mat-button color="primary" (click)="viewProvider(provider.id)">
+          <mat-icon>visibility</mat-icon>
+          View
+        </button>
+        <button mat-button (click)="editProvider(provider.id)">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="confirmDelete(provider)">
+            <mat-icon color="warn">delete</mat-icon>
+            <span>Delete</span>
+          </button>
+          <button mat-menu-item (click)="refreshProvider(provider.id)" [disabled]="loading">
+            <mat-icon>refresh</mat-icon>
+            <span>Refresh</span>
+          </button>
+        </mat-menu>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
