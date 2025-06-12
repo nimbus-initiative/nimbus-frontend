@@ -1,0 +1,28 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/* Roboto font */
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap');
+
+/* Material Icons */
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background-color: #f5f5f5;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.mat-toolbar {
+  font-weight: 500;
+  font-size: 20px;
+}
+
+.mat-icon {
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
